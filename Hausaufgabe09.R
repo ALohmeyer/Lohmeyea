@@ -69,13 +69,13 @@ rt <- read.table("punkt_rt.tab",header=TRUE)
 # Sie von vorneherein etwas behaupten haben.
 
 # Berechnen Sie jetzt den F-Test:
-#print(CODE_HIER)
+var.test(rt$RT~rt$subj)
 
 # Sind die Varianzen homogen? Vergessen Sie nicht, dass die Nullhypothese beim
 # F-Test "Varianzen Gleich" ist.
 
 # Berechenen Sie den Levene Test:
-#print(CODE_HIER)
+leveneTest(rt$RT~rt$subj)
 
 # Sind die Varianzen homogen? Vergessen Sie nicht, dass die Nullhypothese beim
 # Levene Test "Varianzen Gleich" ist.
@@ -87,8 +87,8 @@ rt <- read.table("punkt_rt.tab",header=TRUE)
 # two.sample <- CODE_HIER
 # welch <- CODE_HIER
 
-# print(two.sample)
-# print(welch)
+# print<- t.test(rt$RT~rt$subj, var.equal=TRUE)
+# print<- t.test(rt$RT~rt$subj)
 
 # Das Ergebnis der verschiedenen Test-Funktionen in R ist übrigens eine Liste.
 # Wir können das ausnutzen, um zu schauen, ob es einen Unterschied zwischen den
@@ -113,32 +113,67 @@ rt <- read.table("punkt_rt.tab",header=TRUE)
 # Berechnen Sie Shapiro's Test für die andere Versuchsperson und drücken Sie mit
 # einem if-Block aus, ob die Daten normal verteilt sind.
 
-# CODE_HIER
+shapiro2 <- shapiro.test(rt[rt$subj==2,"RT"])
+print(shapiro2)
+if (shapiro2$p.value > 0.05){
+  print("Shapiro's test insignikant, die Daten sind normal verteilt.")
+}else{
+  print("Shapiro's test signikant, die Daten sind nicht normal verteilt.")
+}
 
 # Wir haben auch Transformationen bei schiefen Datenverteilungen angesprochen.
 # Die logaritmische Verteilung ist ziemlich beliebt bei Reaktionszeitsdaten.
 
-# rt$logRT <- log(rt$RT)
-# print(summary(rt$logRT))
-# logrt.plot <- CODE_HIER
-# print(logrt.plot)
+rt$logRT <- log(rt$RT)
+print(summary(rt$logRT))
+logrt.plot<- qplot(x=logRT,color=subj,fill=subj,data=rt, geom="density",alpha=I(0.3))
+print(logrt.plot)
 
 # Sieht die Verteilung besser aus? Sind die Varianzen "homogener" geworden? 
 # Berechnen Sie den F-Test und den Levene-Test für die logaritmisch skalierten 
 # Daten. Nach jedem Test sollten Sie auch programmatisch (=durch if-Blöcke)
 # ausdrücken, ob die Varianzen homogen sind.
 
-# CODE_HIER
+logrt1 <- rt[rt$subj == "1","logRT"]
+logrt2 <- rt[rt$subj == "2","logRT"]
+log_F <- var.test(logrt1,logrt2)
+print(log_F)
+if (log_F$p.value > 0.05){
+print("Der F-Test ist insignifikant, die Varianzen der Gruppen sind ungleich.")
+}else{
+print("Der F-Test ist signifikant, die Varianzen der Gruppen sind gleich.") 
+log_levene <- leveneTest(logRT_gesamt$logRT ~ logRT_gesamt$subj)
+print(log_levene)
+if (log_levene$`Pr(>F)`[1] > 0.05){
+print("Levene-Test ist insignifikant, die Varianzen der Gruppen sind gleich.")
+}else{
+print("Levene-Test ist signifikant, die Varianzen der Gruppen sind nicht gleich.")
+}
 
 # Sind die Daten "normaler" gewordern? Berechnen Sie den Shapiro-Test für beide 
 # Gruppen. Nach jeder Gruppe sollten Sie auch programmatisch (=durch if-Blöcke)
 # ausdrücken, ob die Daten normal verteilt sind. 
 # (Für die fortgeschrittenen: hier könnte man auch eine for-Schleife nutzen...)
 
-# CODE_HIER
+shapiro_log <- shapiro.test(rt[rt$subj==1,"logRT"])
+print(shapiro_log)
+if (shapiro_log$p.value < 0.05){
+  print ("Shapiro's Test ist signifikant, die Daten sind nicht normal verteilt.")
+}else{
+  print("Shapiro's Test ist insignifikant, die Daten sind normal verteilt.")
+}
+
+shapiro_log2 <- shapiro.test(rt[rt$subj==2,"logRT"])
+print(shapiro_log2)
+if (shapiro_log2$p.value < 0.05){
+  print ("Shapiro's Test ist signifikant, die Daten sind nicht normal verteilt.")
+}else{
+  print("Shapiro's Test ist insignifikant, die Daten sind normal verteilt.")
+}
 
 # Hat die logarithmische Transformation insgesamt geholfen? Berechnen Sie zum
 # Schluss den (Welch) t-Test für die logarithmischen Daten. Bekommen Sie das
 # gleiche Ergebnisse wie bei den Ausgangsdaten?
 
-# CODE_HIER
+welch <- t.test(logrt1,logrt2)
+print(welch)
